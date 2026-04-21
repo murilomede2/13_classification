@@ -551,20 +551,31 @@ final_fit %>%
 Confusion matrix on **test set**:  
 ```{r}
 
+final_fit %>%
+  collect_predictions() %>%
+  conf_mat(truth = strength_gtex_class,
+           estimate = .pred_class
+           ) %>%
+  autoplot(type = "heatmap")
   
 ```
 
 Metrics on the **test set**:
 ```{r}
 
+final_fit %>%
+  collect_metrics()
+
 ```
 Let's hand-calculate accuracy:  
 ```{r}
 #  Numerator: number of correctly classified (the diagonal)
-numerator 
+numerator <- 42 +34 + 29
 
 # Denominator: number of all observations  
-denominator 
+denominator <- 42 + 19 + 15 + 22 + 34 + 26 + 7 + 17 + 29
+
+numerator/denominator  ##must match with the "collect_matrics" function on the cunck above
 
 ```
 
@@ -576,9 +587,9 @@ final_fit %>%
             .pred_Low,
             .pred_Medium,
             .pred_High) %>%
-ggplot(aes(x = ..., 
-           y = ..., 
-           color = ...)) +
+ggplot(aes(x = 1 - specificity,  #Final exam
+           y = sensitivity,         #Final exam
+           color = .level)) +          #Final exam
   geom_line(size = 1.2) +
   geom_abline(linetype = "dashed") +
   coord_equal() +
@@ -605,7 +616,10 @@ final_spec %>%
                           weather_train)) %>%
   conf_mat(truth = strength_gtex_class,
            estimate = .pred_class
-          )
+          ) %>%
+  autoplot(type = "heatmap")
+
+
   
 ```
 
@@ -617,7 +631,10 @@ final_spec %>%
       data = bake(weather_prep, 
                   weather_train)) %>%
   augment(new_data = bake(weather_prep, 
-                          weather_train)) 
+                          weather_train)) %>%
+  accuracy(truth = strength_gtex_class,
+           estimate = .pred_class
+           )
 
 ```
 How does metrics on test compare to metrics on train?  
@@ -646,7 +663,7 @@ ggplot(aes(x = 1 - specificity,
   ) +
   theme_minimal(base_size = 14)
 
-  
+  #A perfect model would do this, as all the classes curves overlapping at 100%/1.00, since the model is properly classifying all the data. We can see through the "accuracy" formula on the chuncks above.
 ```
 
 ### Variable importance 
@@ -663,7 +680,7 @@ The variables with the **largest average decrease in accuracy** are considered *
 
 ```{r}
 final_spec %>%
-  fit(... ~ .,
+  fit(strength_gtex_class ~ .,                        #Final exam.
          data = bake(weather_prep, 
                      weather_train)) %>%
     vi() %>%
@@ -677,6 +694,8 @@ final_spec %>%
   scale_x_continuous(expand = c(0, 0)) +
   labs(y = NULL)
     
+#Almost the Same plot as we had on regression 
+
 ```
 
 **Therefore, solar radiation in July and August, and minimum temperature in June were the most important variables affecting cotton fiber strength.**  
